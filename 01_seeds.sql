@@ -29,3 +29,4 @@ INSERT INTO property_reviews (guest_id, property_id, reservation_id, rating, mes
 VALUES
 (2, 5, 18, 4, 'can we go back yet'),
 (1, 7, 21, 5, 'unreal')
+(2, 5, 19, 1, 'refund please')
