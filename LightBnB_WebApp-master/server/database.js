@@ -135,11 +135,11 @@ const getAllProperties = function(options, limit = 10) {
   let queryString = `
    SELECT properties.*, avg(property_reviews.rating) as average_rating
    FROM properties
-   JOIN property_reviews ON properties.id = property_id
+   LEFT JOIN property_reviews ON properties.id = property_id
   `;
   
   if (options.city) {
-    queryParams.push(`%${options.city}%`);
+    queryParams.push(`%${options.city}%`);  
     queryString += 
     `WHERE city LIKE $${queryParams.length} `;
   }
@@ -148,12 +148,12 @@ const getAllProperties = function(options, limit = 10) {
   if (options.owner_id) {
     queryParams.push(options.owner_id);
 
-  if(options.city) {
-    queryString += `
-    AND properties.owner_id = $${queryParams.length}`;
-   } else {
-    queryString += `
-    WHERE properties.owner_id = $${queryParams.length}`;
+    if(options.city) {
+      queryString += `
+      AND properties.owner_id = $${queryParams.length}`;
+     } else {
+      queryString += `
+      WHERE properties.owner_id = $${queryParams.length}`;
     }
   }
 
