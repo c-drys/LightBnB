@@ -91,21 +91,25 @@ exports.addUser = addUser;
 const getAllReservations = function(guest_id, limit = 10) {
   // return getAllProperties(null, 2);
   return pool.query(`
-    SELECT reservations.*, properties.*, AVG(property_reviews.rating) as average_rating
+    SELECT properties.*, reservations.*, AVG(rating) as average_rating
     FROM reservations
-    JOIN properties ON properties.id =reservations.property_id
+    JOIN properties ON reservations.property_id = properties.id
     JOIN property_reviews ON properties.id = property_reviews.property_id
-    WHERE end_date < now()::date
+    WHERE reservations.guest_id = $1
+    AND reservations.end_date < Now()::date
     GROUP BY reservations.id, properties.id
-    ORDER by reservations.start_date DESC
-    LIMIT 2;
+    ORDER by reservations.start_date
+    Limit $2;
   `, [guest_id, limit])
   //  .then(res => res.rows)
 
   .then(res => {
-    console.log(res.rows);
-    return res.rows;
-    })
+    if (res.rows) {
+      return res.rows;
+    } else {
+      return null;
+    }
+  })
   .catch(err => {
     console.log(err);
   });
@@ -246,7 +250,10 @@ const addProperty = function(property) {
   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
   RETURNING *
   `, propertyDetails)
-  .then (res => res.rows[0]);
+  .then (res => res.rows[0])
+  .catch(err => {
+    //   console.log(err);
 
+  });
 }
 exports.addProperty = addProperty;
