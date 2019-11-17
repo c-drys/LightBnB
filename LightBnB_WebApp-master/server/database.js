@@ -1,13 +1,16 @@
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
-const { Pool } = require('pg');
+// const { Pool } = require('pg');
 
-const pool = new Pool({
-  user: 'vagrant',
-  password: '123',
-  host: 'localhost',
-  database: 'lightbnb'
-});
+// const pool = new Pool({
+//   user: 'vagrant',
+//   password: '123',
+//   host: 'localhost',
+//   database: 'lightbnb'
+// });
+
+const db = require('.index.js')
+
 
 /// Users
 
@@ -27,7 +30,9 @@ const getUserWithEmail = function(email) {
   //   }
   // }
   // return Promise.resolve(user);
-  return pool.query(`
+  // return pool.query(`
+
+  return db.query(`
   SELECT *
   FROM users
   WHERE email = $1
@@ -37,6 +42,7 @@ const getUserWithEmail = function(email) {
 }
 exports.getUserWithEmail = getUserWithEmail;
 
+
 /**
  * Get a single user from the database given their id.
  * @param {string} id The id of the user.
@@ -44,8 +50,10 @@ exports.getUserWithEmail = getUserWithEmail;
  */
 const getUserWithId = function(id) {
   // return Promise.resolve(users[id]);
-  return pool
-  .query(`
+  // return pool
+  // .query(`
+
+  return db.query(`
   SELECT *
   FROM users
   WHERE id = $1
@@ -68,8 +76,11 @@ exports.getUserWithId = getUserWithId;
 //   return Promise.resolve(user);
 
 const addUser = function(user) {
-  return pool
-  .query(`
+  // return pool
+  // .query(`
+
+  return db.query(`
+
   INSERT INTO users (name, email, password)
   VALUES($1, $2, $3)
   RETURNING *
@@ -90,7 +101,9 @@ exports.addUser = addUser;
  */
 const getAllReservations = function(guest_id, limit = 10) {
   // return getAllProperties(null, 2);
-  return pool.query(`
+  // return pool.query(`
+
+   return db.query(`
     SELECT properties.*, reservations.*, AVG(rating) as average_rating
     FROM reservations
     JOIN properties ON reservations.property_id = properties.id
@@ -157,7 +170,6 @@ const getAllProperties = function(options, limit = 10) {
     }
   }
 
-
   if (options.minimum_price_per_night) {
     queryParams.push(options.minimum_price_per_night);
     
@@ -187,23 +199,27 @@ const getAllProperties = function(options, limit = 10) {
 
     queryString += `
     GROUP BY properties.id
-    HAVING AVG (property_reviews.rating) >= $${queryParams.length -1}
+    HAVING AVG (property_reviews.rating) >= $${queryParams.length}
     ORDER BY cost_per_night
     LIMIT $${queryParams.length};
     `;
+
   } else {
     queryParams.push(limit);
 
     queryString += `
     GROUP BY properties.id
-    ORDER BY cost_per_night
     LIMIT $${queryParams.length};
     `;
   }
 
-  return pool.query(queryString, queryParams)
+  // return pool.query(queryString, queryParams)
+
+  return db.query(`queryString, queryParams)
+
   
-  // return pool.query(`
+  return db.query(`
+  
   // SELECT *
   // FROM properties
   // LIMIT $1`
@@ -245,7 +261,7 @@ const addProperty = function(property) {
     property.number_of_bedrooms
   ];
 
-  return pool.query(`
+  return db.query(`
   INSERT INTO properties (owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, street, city, province, post_code, country, parking_spaces, number_of_bathrooms, number_of_bedrooms)
   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
   RETURNING *
